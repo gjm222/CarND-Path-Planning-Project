@@ -250,7 +250,6 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 			}
 		}
 
-		//
 		
 
 	}//for
