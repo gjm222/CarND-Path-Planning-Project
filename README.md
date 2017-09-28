@@ -61,6 +61,7 @@ A lane change delay was put in to minimize jerk in certain situations where the 
 
 ## Discussion ##
 Although this planner works very well, many improvements could be made.  Use of a trained gaussian classifier predictor probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took some trial and error tinkering to get it right.  
+Many scenarios of getting better timing were not considered such as getting out of "traps" in the traffic.  This planner is cautious and only makes a change looking at the lane next to it.
 
 More consideration for crossing over to the far lane should have been done to get better timings.
 
