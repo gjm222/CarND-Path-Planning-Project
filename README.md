@@ -5,7 +5,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 # Reflection
 
-This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `src/main.cpp`.  Note that much of the code from the project walk-through was used.
+This code provides path planning for use with the Udacity Term 3 Simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines in this document are to `src/main.cpp`.  Note that much of the code from the project walk-through was used.
 
 Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396-414). 
 
