@@ -5,7 +5,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 # Reflection
 
-This code provides path planning for the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `main.cpp`.  
+This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `main.cpp`.  
 
 Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396-414). 
 
@@ -32,8 +32,11 @@ Once out of the loop that processes each car on the road, the reference velocity
 The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.
 
 ## Spline ##
-
+![](./images/Pic3.JPG)
 ## Ticker ##
+
+## Discussion ##
+Many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of fussing to get it right.  
 
 
 
