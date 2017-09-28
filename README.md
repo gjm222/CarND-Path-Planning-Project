@@ -5,7 +5,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 # Reflection
 
-This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `main.cpp`.  
+This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `src/main.cpp`.  
 
 Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396-414). 
 
@@ -29,11 +29,28 @@ Once out of the loop that processes each car on the road, the reference velocity
 
 
 ## Path planner/lane changer ##
-The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.  This function will add cost to changing lanes as it goes. The variables kcost (stay in lane), rcost (lane change right), and lcost (lange change left) are increased as the situations are assessed.
-The first check makes the cost very high if it is not possible to go right or to the left.
-The second check is done on whether my car could safely change to the left or right lane by looking for any cars there (lines 222-243).
+The path planner function called `lane_changer()` will be invoked (line 520) if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.  This function will add cost to changing lanes as it goes. The variables kcost (stay in lane), rcost (lane change right), and lcost (lange change left) are increased as the situations are assessed.
+
+The first check makes the cost very high too go left if the car is already in the far left or to go right and the car is already in the far right lanes.
+The second check is done on whether my car could safely change to the left or right lane by looking for any cars beside my car (lines 222-243).
+
+Another check is done to see if there is an accelerating car comming from behind in either side lane.  A calculation based on future location in 30 steps on all cars behind mine is done to see if my car and the other car will collide thus making the cost high to perform that action (See lines 290-316).
+
+A choice, only if my car is in the center lane, is made between left and right lanes if the keep-lane cost is high; it chooses the lane right or left lane with the lowest cost (See lines 321-325).
+
+
 
 ## Spline ##
+Now the code needs to determine what path points to send back to the simulator.  First, points are set up to be fed in to a spline class created by Tino Kluge to be used as the future projection for the simulator.  The first two points for the spline are set up in a way that will smoothly mesh with the previous end points (See lines 549-575). Three more points (x,y) will be added by using the `getXY()` function provided to map points 30, 60, and 90 "s" meters in the distance (line 578-580). These 5 points to be splined are shifted and rotated around the origin and then fed into the `set_points()` spline class method on line 601 to create our continous projection to follow in the future.
+
+
+determined based on the current state of the vehicle (x, y, yaw), the desired velocity, desired lane, and project out 1 second (50 steps of 0.02 seconds) in the future
+
+The points will be determined based on the current state of the vehicle (x, y, yaw), the desired velocity, desired lane, and project out 1 second (50 steps of 0.02 seconds) in the future.  These points will then be fed into a spline function provided by Tino Kluge which will provide a continous path.  Previous points not used by the simulator will be sent back to us and reused i.e. only points needed to fill the 50 point array will need to calculated and smoothly added to the end of the array.
+
+
+The spacing of the points will determine velocity.
+
 ![](./images/Pic3.JPG)
 ![](./images/Pic4.JPG)
 ## Ticker ##
@@ -42,6 +59,8 @@ The second check is done on whether my car could safely change to the left or ri
 Although this planner works very well, many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of tinkering to get it right.  
 
 More consideration for crossing over to the far lane should have been done to get better timings.
+
+It would have saved a lot of time to be able to control the other cars in the simulator while it is running to provide scenarios on demand for testing instead having to wait and see if it happens naturally by the simulator.
 
 
 
