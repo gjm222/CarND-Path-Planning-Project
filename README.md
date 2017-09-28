@@ -41,6 +41,8 @@ The second check is done on whether my car could safely change to the left or ri
 ## Discussion ##
 Although this planner works very well, many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of tinkering to get it right.  
 
+More consideration for crossing over to the far lane should have been done to get better timings.
+
 
 
    
