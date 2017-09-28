@@ -1,6 +1,8 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
 
+![Original](./images/pic1.jpg)
+
 # Reflection
 
 This code provides path planning for the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `main.cpp`.  
