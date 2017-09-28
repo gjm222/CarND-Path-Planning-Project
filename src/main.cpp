@@ -18,15 +18,15 @@ double ref_vel = 0.0;
 
 using namespace std;
 
-const double safeDistFront=30.0;
-const double safeDistBack=10.0;
-const double safeDistBackFuture=36.0;
+const double safeDistFront=30.0;  //Buffer distance in front of car in next lane
+const double safeDistBack=10.0;   //Buffer distance in back of car in next lane
+const double safeDistBackFuture=36.0;  //Buffer for cars comming from behind in next lane
 
-const double safeDistDetectionVal=30.0;
-const double safeDistDetectionVal2 = safeDistDetectionVal * .7;
-const double safeDistDetectionVal3 = safeDistDetectionVal * .5;
+const double safeDistDetectionVal=30.0;  //s distance to start detecting cars in front of my car so to slow down and consider lane change
+const double safeDistDetectionVal2 = safeDistDetectionVal * .7;  //s distance to slow down even more
+const double safeDistDetectionVal3 = safeDistDetectionVal * .5;  //s distance to slow down a lot
 
-const double sideTooCloseBuffer=1.0;
+const double sideTooCloseBuffer=1.0;  //d distance that will detect if a car is comming in to my lane
 
 // for convenience
 using json = nlohmann::json;
