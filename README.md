@@ -43,16 +43,12 @@ A choice, only if my car is in the center lane, is made between left and right l
 ## Spline ##
 Now the code needs to determine what path points to send back to the simulator.  First, points are set up to be fed in to a spline class created by Tino Kluge to be used as the future projection for the simulator.  The first two points for the spline are set up in a way that will smoothly mesh with the previous end points (See lines 549-575). Three more points (x,y) will be added by using the `getXY()` function provided to map points 30, 60, and 90 "s" meters in the distance (line 578-580). These 5 points to be splined are shifted and rotated around the origin and then fed into the `set_points()` spline class method on line 601 to create our continous projection to follow in the future.
 
+Now that we have a projection reference spline we can set up the points that will be sent back to the simulator. These points will initialized by the previously unused points ( calculated earlier by us but now sent from the simulator back) in lines 611-615.  
 
-determined based on the current state of the vehicle (x, y, yaw), the desired velocity, desired lane, and project out 1 second (50 steps of 0.02 seconds) in the future
+To get the correct point spacing (i.e. velocity) calculations are performed to match the spline with the simulator. These points are added to the end of the previously unused points from the simulator (See lines 618-645).
 
-The points will be determined based on the current state of the vehicle (x, y, yaw), the desired velocity, desired lane, and project out 1 second (50 steps of 0.02 seconds) in the future.  These points will then be fed into a spline function provided by Tino Kluge which will provide a continous path.  Previous points not used by the simulator will be sent back to us and reused i.e. only points needed to fill the 50 point array will need to calculated and smoothly added to the end of the array.
-
-
-The spacing of the points will determine velocity.
-
-![](./images/Pic3.JPG)
 ![](./images/Pic4.JPG)
+
 ## Ticker ##
 
 ## Discussion ##
