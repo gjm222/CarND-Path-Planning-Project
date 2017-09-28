@@ -11,14 +11,22 @@
 #include "spline.h"
 
 int lane = 1;
+int prevLane = 1;
+long laneChangeTicker = 50;
 double ref_vel = 0.0;
+
 
 using namespace std;
 
-const double safeDistFront=25.0;
-const double safeDistBack=20.0;
-const double safeDistBackFuture=40.0;
+const double safeDistFront=30.0;
+const double safeDistBack=10.0;
+const double safeDistBackFuture=36.0;
+
 const double safeDistDetectionVal=30.0;
+const double safeDistDetectionVal2 = safeDistDetectionVal * .7;
+const double safeDistDetectionVal3 = safeDistDetectionVal * .5;
+
+const double sideTooCloseBuffer=1.0;
 
 // for convenience
 using json = nlohmann::json;
@@ -168,7 +176,7 @@ vector<double> getXY(double s, double d, const vector<double> &maps_s, const vec
 
 }
 
-int cost_function1(vector<vector<double>> sensor_fusion, double current_s, double car_speed, int current_lane)
+int lane_changer(vector<vector<double>> sensor_fusion, double current_s, double car_speed, int current_lane)
 {
 	
 	//Might want to change lane so check out our options
@@ -185,13 +193,15 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 	double rclosestcar_v_back = 0.0;
 
 
-	//For each othercar in left lane:
+	//For each othercar...
 	for( int i = 0; i < sensor_fusion.size(); i++) {
 		//get lane the this other car is in
 		float d = sensor_fusion[i][6];
 		double check_car_s = sensor_fusion[i][5]; //s position of car in my lane
 		double check_car_vx = sensor_fusion[i][3];//velocity x
 		double check_car_vy = sensor_fusion[i][4];//velocity y
+
+		double check_vel = sqrt(check_car_vx*check_car_vx + check_car_vy*check_car_vy);
 
 		if( d < 4.0 ) 
 			othercar_lane = 0; //left lane
@@ -208,20 +218,27 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 		if( current_lane == 2 )
 			rcost+=999;
 
-		//relative left lane only...
+		//Score relative left lane only...
 		if( othercar_lane == current_lane - 1 ) {
-			if( check_car_s > (current_s - safeDistBack) && check_car_s < (current_s + safeDistFront) ) //Unsafe range
+			if( check_car_s > (current_s - safeDistBack) && check_car_s < (current_s + safeDistFront) ) { //Unsafe range
 				lcost += 999;
-			else
+				//cout << "not free to switch left" << endl;
+			}
+			else {				
 				kcost += 100;
+				
+			}
 						        
 		}
-		//relative right lane only...
+		//Score relative right lane only...
 		else if( othercar_lane == current_lane + 1 ) {
-			if( (check_car_s > (current_s - safeDistBack) && check_car_s < (current_s + safeDistFront)) || current_lane == 2 ) //Unsafe range
+			if( (check_car_s > (current_s - safeDistBack) && check_car_s < (current_s + safeDistFront)) ) {//Unsafe range
 				rcost += 999;
-			else
-				kcost += 100;
+				//cout << "not free to switch right" << endl;
+			}
+			else {
+				kcost += 100;				
+			}
 						        
 		}
 
@@ -240,13 +257,13 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 		if( othercar_lane == (current_lane - 1) )  { //left
 			if( current_s > check_car_s && check_car_s > lclosestcar_s_back ) {
 				lclosestcar_s_back = check_car_s;
-				lclosestcar_v_back = sqrt(check_car_vx*check_car_vx + check_car_vy*check_car_vy);
+				lclosestcar_v_back = check_vel;
 			}
 		}
 		else if( othercar_lane == (current_lane + 1) )  { //right
 			if( current_s > check_car_s && check_car_s > rclosestcar_s_back ) {
 				rclosestcar_s_back = check_car_s;
-			    rclosestcar_v_back = sqrt(check_car_vx*check_car_vx + check_car_vy*check_car_vy);
+			    rclosestcar_v_back = check_vel;
 			}
 		}
 
@@ -270,23 +287,27 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 	}
 
 	//Check to see cars in other lanes are on a collision course from behind
-	double future_s = current_s + (50.0*.02*car_speed); //project s 50 points in future in left lane
-	if( othercar_lane == current_lane - 1 ) { //left
+	double future_s = current_s + (30.0*.02*car_speed); //project s 30 points in future in left lane
+	if( lclosestcar_s_back >  0 ) { //left
 		//project closest car in left lane
-		double check_future_s = lclosestcar_s_back + (50.0*.02*lclosestcar_v_back); //project s 50 points in future in left lane
+		double check_future_s = lclosestcar_s_back + (30.0*.02*lclosestcar_v_back); //project s 30 points in future in left lane
 		
-		if( check_future_s > (future_s - safeDistBackFuture) ) { //Unsafe range
+		//cout << "L future s=" << future_s << " future check s=" << check_future_s << "back speed=" << lclosestcar_v_back << "myspeed=" << car_speed <<endl;
+
+		if( check_future_s > (future_s - safeDistBackFuture) && lclosestcar_v_back > car_speed) { //Unsafe range
 			lcost += 999; //dangerous
 			//cout << "Accelerating carin left lane behind" << endl;
 		}
 		else
 			kcost += 100;					        
 	}
-	if( othercar_lane == current_lane + 1 ) { //right
+	if( rclosestcar_s_back > 0 ) { //right
 		//project closest car in right lane
-		double check_future_s = rclosestcar_s_back + (50.0*.02*rclosestcar_v_back); //project s 50 points in future in left lane
+		double check_future_s = rclosestcar_s_back + (30.0*.02*rclosestcar_v_back); //project s 30 points in future in left lane
 		
-		if( check_future_s > (future_s - safeDistBackFuture) ) { //Unsafe range
+		//cout << "R future s=" << future_s << " future check s=" << check_future_s <<  " back speed=" << lclosestcar_v_back << " myspeed=" << car_speed <<endl;
+
+		if( check_future_s > (future_s - safeDistBackFuture) && lclosestcar_v_back > car_speed) { //Unsafe range
 			rcost += 999; //dangerous
 		    //cout << "Accelerating car in right lane behind" << endl;
 		}
@@ -298,9 +319,9 @@ int cost_function1(vector<vector<double>> sensor_fusion, double current_s, doubl
 
 	//Determine which lane is best based on cost...
 	if( kcost > rcost || kcost > lcost ) {
-		if( lcost <= rcost ) 								
+		if( lcost <= rcost )  								
 			lane_to_return--; //Change to left lane
-		else 
+		else
 			lane_to_return++; //Change to right lane
 	}
 
@@ -375,9 +396,12 @@ int main() {
           	double car_x = j[1]["x"];
           	double car_y = j[1]["y"];
           	double car_s = j[1]["s"];
+			double car_s_immed = car_s;
           	double car_d = j[1]["d"];
           	double car_yaw = j[1]["yaw"];
           	double car_speed = j[1]["speed"];
+
+			car_speed/=2.27273; //convert to m/s
 
           	// Previous path data given to the Planner
           	auto previous_path_x = j[1]["previous_path_x"];
@@ -402,39 +426,106 @@ int main() {
 
 				//car is in my lane
 				float d = sensor_fusion[i][6];
+				double check_car_s = sensor_fusion[i][5]; //s position of other car
+				double check_car_s_immed = check_car_s;   //s position of other car
+				
+
+				//boundry of lane the ego is in
+				float lbound = 2+4*lane-2;
+				float rbound = 2+4*lane+2;
 
 				//Only process if in my lane range
-				if( d < (2+4*lane+2) && d > (2+4*lane-2) ) {
+				if( d < rbound && d > lbound ) {
 					double vx = sensor_fusion[i][3];
 					double vy = sensor_fusion[i][4];
 					double check_speed = sqrt(vx*vx+vy*vy);   //speed of car in m lane
-					double check_car_s = sensor_fusion[i][5]; //s position of car in my lane
-	
+					
+					
 				    check_car_s+=((double)prev_size*.02*check_speed); //project s points out of car in my lane
-					//See if too close in same lane
-					if( (check_car_s > car_s) && ((check_car_s-car_s) < safeDistDetectionVal) ) {
+					
+					double s_diff = check_car_s-car_s;
+					
+					//See if too close in same lane					
+					if( (check_car_s_immed > car_s_immed) && s_diff < safeDistDetectionVal)  {
 						//ref_vel = 29.5;
-						too_close = 1;
-						if( (check_car_s-car_s) < 9 )
-							too_close = 2;
-						else if( (check_car_s-car_s) < 5 )
-							too_close = 3;
+						too_close = 1;        //deceleration level 1
+						//cout << "s diff 0=" << s_diff << endl;
+						if( s_diff < safeDistDetectionVal3 )
+							too_close = 3;    //deceleration level 3
+						else if( s_diff < safeDistDetectionVal2 )
+							too_close = 2;    //deceleration level 2
 					}
 				}//if
+
+				//If is too close from side...
+				if( (fabs(lbound - d) < sideTooCloseBuffer || fabs(rbound - d) < sideTooCloseBuffer) && 
+					check_car_s_immed > car_s_immed - 5.0 && check_car_s_immed < car_s_immed + 20.0 ) {
+					too_close = 4;
+					//cout << "too close to side" << endl;
+				}
+
+
+				//Detect car rigth beside me
+				//if( (fabs(lbound - d) < 4.0 || fabs(rbound - d) < 4.0) && 
+				//	check_car_s_immed > car_s_immed - 5.0 && check_car_s_immed < car_s_immed + 5.0 ) {
+				//		double vx = sensor_fusion[i][3];
+				//	double vy = sensor_fusion[i][4];
+				//	double check_speed = sqrt(vx*vx+vy*vy);   //speed of car in m lane
+				//	cout << "car beside me " << laneChangeTicker << "my speed=" << car_speed << " other speed=" << check_speed <<endl;
+				//}
+
 			}//for
 
+			//Increment lane change ticker used to delay lane change if too soon
+			laneChangeTicker++;
+			if( laneChangeTicker > 50000 )
+				laneChangeTicker = 50;
+
+
+			//random lane change
+			//if( laneChangeTicker > 0 && laneChangeTicker % 300 == 0 ) {
+			//	lane = lane_changer(sensor_fusion, car_s_immed, car_speed, lane);
+			//	cout << "random lane cost" << endl;
+			//}
 
 			if( too_close > 0 ) { //decelerate and maybe change lanes
 				switch( too_close ) {
 				case 1:
 					ref_vel -= .224; //normal deceleration
+					//cout << "level 1" << endl;
+					break;
 				case 2:
-					ref_vel -= .45;  //medium deceleration
+					ref_vel -= .70;  //medium deceleration
+					//cout << "level 2" << endl;
+					break;
 				case 3:
 					ref_vel -= 1.00; //high deceleration
+					//cout << "level 3" << endl;
+					break;
+                case 4:
+					ref_vel -= 2.50; //high deceleration
+					//cout << "level 4" << endl;
+					break;
+				default:
+					ref_vel -= .224; //normal deceleration
+					break;
 				}
-								
-				lane = cost_function1(sensor_fusion, car_s, car_speed, lane);
+
+				//Do not decelerate too much.
+				if( ref_vel < 0.0 ) ref_vel = 1.0;
+				
+				
+				
+				if( laneChangeTicker > 15 ) //delay consecutive lane changes to avoid jerk 
+					lane = lane_changer(sensor_fusion, car_s_immed, car_speed, lane);
+				//else cout << "lane ticker tick" << endl;
+
+				if( prevLane != lane ) {
+					//cout << "lane change----" << endl;
+					laneChangeTicker = 0;
+					prevLane = lane;
+				}
+
 				//cout << "lane to go in to=" << lane << endl;				
 
 			}
