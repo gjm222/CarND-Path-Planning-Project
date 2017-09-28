@@ -5,21 +5,25 @@ Self-Driving Car Engineer Nanodegree Program
 
 This code provides path planning for the term3 simulator and is written in C++ contained in the `main.cpp` source.  
 
-Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396 through 414 in `main.cpp` ). 
+Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396-414 in `main.cpp` ). 
 
+## Same Lane Frontal Collision Avoidance ##
 The first for loop starting on line 425 goes through all the other cars on the road and determines if one of them in my lane is on a collision course.  Determining if the other car is in same lane is done by calculating the lane range on line 434 through 438 based on the assumption of a 4 meter lane width.
 ```
 float lbound = 2+4*lane-2;
 float rbound = 2+4*lane+2;
 ```
 The other car's s is then calculated out in to the future to match my car's s value which was set to the last value in the previous path...
-
 ```
 if( prev_size > 0 ) {
    car_s = end_path_s;
 }
-...         
-check_car_s+=((double)prev_size*.02*check_speed) ```
+check_car_s+=((double)prev_size*.02*check_speed)
+```
+The difference in the calculated position of the other car and my car is used to determine one of three levels of decleration on lines 446-456. Following this there is also code to determine if a car in another lane is crossing in to my lane and could cause a collision.  The deceleration level will be set to 4 causing maximum deceleration to avoid the collision (See lines 461-465). 
+
+Once out of the loop that processes each car on the road, 
+
 
 Path planner/lane changer.
 
