@@ -29,19 +29,19 @@ Once out of the loop that processes each car on the road, the reference velocity
 
 
 ## Path planner/lane changer ##
-The path planner function called `lane_changer()` will be invoked (line 520) if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.  This function will add cost to changing lanes as it goes. The variables kcost (stay in lane), rcost (lane change right), and lcost (lange change left) are increased as the situations are assessed.
+The path planner function called `lane_changer()` will be invoked (line 520) if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.  This function will add cost to changing lanes as it goes. The variables kcost (stay in lane), rcost (lane change right), and lcost (lane change left) are increased as the situations are assessed.
 
 The first check makes the cost very high too go left if the car is already in the far left or to go right and the car is already in the far right lanes.
 The second check is done on whether my car could safely change to the left or right lane by looking for any cars beside my car (lines 222-243).
 
-Another check is done to see if there is an accelerating car comming from behind in either side lane.  A calculation based on future location in 30 steps on all cars behind mine is done to see if my car and the other car will collide thus making the cost high to perform that action (See lines 290-316).
+Another check is done to see if there is an accelerating car coming from behind in either side lane.  A calculation based on future location in 30 steps on all cars behind mine is done to see if my car and the other car will collide thus making the cost high to perform that action (See lines 290-316).
 
 A choice, only if my car is in the center lane, is made between left and right lanes if the keep-lane cost is high; it chooses the lane right or left lane with the lowest cost (See lines 321-325).
 
 
 
 ## Spline ##
-Now the code needs to determine what path points to send back to the simulator.  First, points are set up to be fed in to a spline class created by Tino Kluge to be used as the future projection for the simulator.  The first two points for the spline are set up in a way that will smoothly mesh with the previous end points (See lines 549-575). Three more points (x,y) will be added by using the `getXY()` function provided to map points 30, 60, and 90 "s" meters in the distance (line 578-580). These 5 points to be splined are shifted and rotated around the origin and then fed into the `set_points()` spline class method on line 601 to create our continous projection to follow in the future.
+Now the code needs to determine what path points to send back to the simulator.  First, points are set up to be fed in to a spline class created by Tino Kluge to be used as the future projection for the simulator.  The first two points for the spline are set up in a way that will smoothly mesh with the previous end points (See lines 549-575). Three more points (x,y) will be added by using the `getXY()` function provided to map points 30, 60, and 90 "s" meters in the distance (line 578-580). These 5 points to be splined are shifted and rotated around the origin and then fed into the `set_points()` spline class method on line 601 to create our continuous projection to follow in the future.
 
 Now that we have a projection reference spline we can set up the points that will be sent back to the simulator. These points will initialized by the previously unused points ( calculated earlier by us but now sent from the simulator back) in lines 611-615.  
 
@@ -50,7 +50,7 @@ To get the correct point spacing (i.e. velocity) calculations are performed to m
 ![](./images/Pic4.JPG)
 
 ## Lane Change Delay ##
-A lane change delay was put in to minimize jerk in certain situations where the car would switch lanes and then immediately switch lanes again exceeding the max allowed.  This is done with a counter of "ticks" or iterations and will not call the lane_changer() function within a certain amounts of ticks between lane changes (See lines 480-482 and 519-526).
+A lane change delay was put in to minimize jerk in certain situations where the car would switch lanes and then immediately switch lanes again exceeding the max allowed.  This is done with a counter of "ticks" or iterations and will not call the `lane_changer()` function within a certain amounts of ticks between lane changes (See lines 480-482 and 519-526).
 
 ## Discussion ##
 Although this planner works very well, many improvements could be made.  Use of a trained gaussian classifier predictor probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took some trial and error tinkering to get it right.  
