@@ -29,14 +29,16 @@ Once out of the loop that processes each car on the road, the reference velocity
 
 
 ## Path planner/lane changer ##
-The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.
+The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.  This function will add cost to changing lanes as it goes. The variables kcost (stay in lane), rcost (lane change right), and lcost (lange change left) are increased as the situations are assessed.
+The first check makes the cost very high if it is not possible to go right or to the left.
+The second check is done on whether my car could safely change to the left or right lane by looking for any cars there (lines 222-243).
 
 ## Spline ##
 ![](./images/Pic3.JPG)
 ## Ticker ##
 
 ## Discussion ##
-Many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of fussing to get it right.  
+Although this planner works very well, many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of tinkering to get it right.  
 
 
 
