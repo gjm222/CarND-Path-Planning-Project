@@ -27,7 +27,7 @@ Once out of the loop that processes each car on the road, the reference velocity
 
 
 ## Path planner/lane changer ##
-The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.
+The path planner function called `lane_changer()` will be invoked if any of the deceleration levels were set, thus only looking for a new path if the current path was hindered.  The lane_changer() function goes through the loop of all the cars on the road and determines best routes of either stay in the current lane, change left, or change right.
 
 ## Ticker ##
 
