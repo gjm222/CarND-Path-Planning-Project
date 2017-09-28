@@ -7,6 +7,22 @@ This code provides path planning for the term3 simulator and is written in C++ c
 
 Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396 through 414 in `main.cpp` ). 
 
+The first for loop starting on line 425 goes through all the other cars on the road and determines if one of them in my lane is on a collision course.  Determining if the other car is in same lane is done by calculating the lane range on line 434 through 438 based on the assumption of a 4 meter lane width.
+```
+float lbound = 2+4*lane-2;
+float rbound = 2+4*lane+2;
+```
+The other car's s is then calculated out in to the future to match my car's s value which was set to the last value in the previous path...
+
+```
+if( prev_size > 0 ) {
+   car_s = end_path_s;
+}
+...         
+check_car_s+=((double)prev_size*.02*check_speed) ```
+
+Path planner/lane changer.
+
 
    
 ### Simulator.
