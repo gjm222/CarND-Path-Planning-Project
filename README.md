@@ -5,7 +5,7 @@ Self-Driving Car Engineer Nanodegree Program
 
 # Reflection
 
-This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `src/main.cpp`.  
+This code provides path planning for use with the term3 simulator and is written in C++ contained in the `main.cpp` source.  All reference to lines are in `src/main.cpp`.  Note that much of the code from the project walk-through was used.
 
 Initially the code accepts from the simulator the current car information x, y, s, d, yaw, car-speed along with the remaining previous path that was not used since the simulator invoked the planning code.  It also recieves sensor data about the other cars on the road i.e. the id, x, y, vx, vy, s, d of each car (See lines 396-414). 
 
@@ -37,7 +37,14 @@ The second check is done on whether my car could safely change to the left or ri
 Another check is done to see if there is an accelerating car coming from behind in either side lane.  A calculation based on future location in 30 steps on all cars behind mine is done to see if my car and the other car will collide thus making the cost high to perform that action (See lines 290-316).
 
 A choice, only if my car is in the center lane, is made between left and right lanes if the keep-lane cost is high; it chooses the lane right or left lane with the lowest cost (See lines 321-325).
-
+```
+if( kcost > rcost || kcost > lcost ) {
+   if( lcost <= rcost )  								
+	   lane_to_return--; //Change to left lane
+	else
+		lane_to_return++; //Change to right lane
+}
+```
 
 
 ## Spline ##
