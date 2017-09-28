@@ -45,14 +45,15 @@ Now the code needs to determine what path points to send back to the simulator. 
 
 Now that we have a projection reference spline we can set up the points that will be sent back to the simulator. These points will initialized by the previously unused points ( calculated earlier by us but now sent from the simulator back) in lines 611-615.  
 
-To get the correct point spacing (i.e. velocity) calculations are performed to match the spline with the simulator. These points are added to the end of the previously unused points from the simulator (See lines 618-645).
+To get the correct point spacing (i.e. velocity) calculations are performed to match the spline with the simulator. These points are added to the end of the previously unused points from the simulator. The points are also shifted and rotated back to simulator space before being added to the point lists (See lines 618-645).
 
 ![](./images/Pic4.JPG)
 
-## Ticker ##
+## Lane Change Delay ##
+A lane change delay was put in to minimize jerk in certain situations where the car would switch lanes and then immediately switch lanes again exceeding the max allowed.  This is done with a counter of "ticks" or iterations and will not call the lane_changer() function within a certain amounts of ticks between lane changes (See lines 480-482 and 519-526).
 
 ## Discussion ##
-Although this planner works very well, many improvements could be made to this planner.  Use of a trained gaussian classifier predictive probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took a lot of tinkering to get it right.  
+Although this planner works very well, many improvements could be made.  Use of a trained gaussian classifier predictor probably would have been a better choice for planning lanes but in the interest of time I went with a brute force approach which took some trial and error tinkering to get it right.  
 
 More consideration for crossing over to the far lane should have been done to get better timings.
 
